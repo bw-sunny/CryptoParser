@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "/Users/bezenov_v/Desktop/CryptoParser/proto";
+
+service Crypto {
+  rpc CryptoPrice (PriceRequest) returns (PriceResponse) {}
+}
+
+message PriceRequest {
+  string name = 1;
+}
+
+message PriceResponse {
+  string message = 1;
+}

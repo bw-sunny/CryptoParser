@@ -1,36 +1,35 @@
-package main
+// package main
 
-import (
-	"context"
-	"log"
-	"os"
-	"time"
+// import (
+// 	"context"
+// 	"fmt"
+// 	"log"
+// 	"time"
 
-	pb "CryptoParser/proto"
+// 	pb "CryptoParser/proto"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-)
+// 	"google.golang.org/grpc"
+// 	"google.golang.org/grpc/credentials/insecure"
+// )
 
-func main() {
-	conn, err := grpc.Dial("localhost:50052", grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-	defer conn.Close()
+// func main() {
+// 	conn, err := grpc.Dial("localhost:50052", grpc.WithTransportCredentials(insecure.NewCredentials()))
+// 	if err != nil {
+// 		log.Fatalf("did not connect: %v", err)
+// 	}
+// 	defer conn.Close()
 
-	c := pb.NewCryptoClient(conn)
-	name := "BTC" // по умолчанию BTC
-	if len(os.Args) > 1 {
-		name = os.Args[1]
-	}
+// 	c := pb.NewCryptoClient(conn)
+// 	name := "BTC" // по умолчанию BTC
+// 	fmt.Printf("Введите название тикера: \n")
+// 	fmt.Scan(&name)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+// 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+// 	defer cancel()
 
-	r, err := c.CryptoPrice(ctx, &pb.PriceRequest{Name: name})
-	if err != nil {
-		log.Fatalf("could not greet: %v", err)
-	}
-	log.Printf("Response: %s", r.Message)
-}
+// 	r, err := c.CryptoPrice(ctx, &pb.PriceRequest{Name: name})
+// 	if err != nil {
+// 		log.Fatalf("could not greet: %v", err)
+// 	}
+// 	log.Printf("%s", r.Message)
+// }

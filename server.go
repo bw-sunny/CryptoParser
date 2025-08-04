@@ -9,6 +9,7 @@ import (
 	pb "CryptoParser/proto"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type server struct {
@@ -32,6 +33,7 @@ func main() {
 	}
 	s := grpc.NewServer()
 	pb.RegisterCryptoServer(s, &server{})
+	reflection.Register(s)
 	log.Println("Server started on :50052")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

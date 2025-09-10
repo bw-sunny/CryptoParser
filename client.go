@@ -17,7 +17,6 @@ import (
 	"google.golang.org/grpc/stats"
 )
 
-// CryptoClient представляет gRPC клиент для получения данных о криптовалютах
 type CryptoClient struct {
 	conn            *grpc.ClientConn
 	client          pb.CryptoClient
@@ -26,19 +25,16 @@ type CryptoClient struct {
 	requestInterval time.Duration
 }
 
-// RequestCounterStatsHandler счетчик запросов
 type RequestCounterStatsHandler struct {
 	requestCount atomic.Int64
 }
 
-// Crypto структура для данных о криптовалюте
 type Crypto struct {
 	Time   string
 	Ticker string
 	Price  string
 }
 
-// CryptoRatio структура для данных о long/short ratio
 type CryptoRatio struct {
 	Time           string
 	Ticker         string
@@ -47,7 +43,6 @@ type CryptoRatio struct {
 	LongShortRatio string
 }
 
-// NewCryptoClient создает новый экземпляр CryptoClient
 func NewCryptoClient(serverAddr, csvFilename string, requestInterval time.Duration) (*CryptoClient, error) {
 	statsHandler := &RequestCounterStatsHandler{}
 
@@ -69,7 +64,6 @@ func NewCryptoClient(serverAddr, csvFilename string, requestInterval time.Durati
 	}, nil
 }
 
-// Close закрывает соединение с сервером
 func (cc *CryptoClient) Close() error {
 	if cc.conn != nil {
 		return cc.conn.Close()
@@ -77,12 +71,10 @@ func (cc *CryptoClient) Close() error {
 	return nil
 }
 
-// GetRequestCount возвращает количество выполненных запросов
 func (cc *CryptoClient) GetRequestCount() int64 {
 	return cc.statsHandler.requestCount.Load()
 }
 
-// GetCryptoPrice получает цену для конкретной криптовалюты
 func (cc *CryptoClient) GetCryptoPrice(ctx context.Context, ticker string) (Crypto, error) {
 	response, err := cc.client.CryptoPrice(ctx, &pb.PriceRequest{Name: ticker})
 	if err != nil {
@@ -114,29 +106,24 @@ func (cc *CryptoClient) GetCryptoRatio(ctx context.Context, ticker string) (Cryp
 	return ratio, nil
 }
 
-// SaveCryptoToCSV сохраняет данные о криптовалюте в CSV файл
 func (cc *CryptoClient) SaveCryptoToCSV(crypto Crypto) error {
 	return appendPriceToCSVFile(crypto, cc.csvFilename)
 }
 
-// SaveRatioToCSV сохраняет данные о ratio в CSV файл
 func (cc *CryptoClient) SaveRatioToCSV(ratio CryptoRatio) error {
 	return appendRatioToCSVFile(ratio, "crypto_ratio.csv")
 }
 
-// InitializeCSVFile создает CSV файл с заголовками для цен
 func (cc *CryptoClient) InitializePriceCSV() error {
 	return initializeCSVFile(cc.csvFilename, []string{"Time", "Ticker", "Price"})
 }
 
-// InitializeRatioCSV создает CSV файл с заголовками для ratio
 func (cc *CryptoClient) InitializeRatioCSV() error {
 	return initializeCSVFile("crypto_ratio.csv", []string{"Time", "Ticker", "BuyRatio", "SellRatio", "LongShortRatio"})
 }
 
-// RunInteractiveMode запускает интерактивный режим для ввода тикеров
 func (cc *CryptoClient) RunInteractiveMode(ctx context.Context) error {
-	// Инициализируем CSV файлы
+
 	if err := cc.InitializePriceCSV(); err != nil {
 		return fmt.Errorf("failed to initialize price CSV file: %v", err)
 	}
@@ -161,12 +148,11 @@ func (cc *CryptoClient) RunInteractiveMode(ctx context.Context) error {
 			break
 		}
 
-		// Получаем данные о цене
 		crypto, err := cc.GetCryptoPrice(ctx, ticker)
 		if err != nil {
 			fmt.Printf("Ошибка при получении цены: %v\n", err)
 		} else {
-			// Сохраняем цену в CSV
+
 			if err := cc.SaveCryptoToCSV(crypto); err != nil {
 				fmt.Printf("Ошибка при сохранении цены: %v\n", err)
 			} else {
@@ -174,12 +160,11 @@ func (cc *CryptoClient) RunInteractiveMode(ctx context.Context) error {
 			}
 		}
 
-		// Получаем данные о ratio
 		ratio, err := cc.GetCryptoRatio(ctx, ticker)
 		if err != nil {
 			fmt.Printf("Ошибка при получении ratio: %v\n", err)
 		} else {
-			// Сохраняем ratio в CSV
+
 			if err := cc.SaveRatioToCSV(ratio); err != nil {
 				fmt.Printf("Ошибка при сохранении ratio: %v\n", err)
 			} else {
@@ -191,7 +176,6 @@ func (cc *CryptoClient) RunInteractiveMode(ctx context.Context) error {
 		fmt.Printf("✓ Данные сохранены в CSV файлы\n")
 		fmt.Println("---")
 
-		// Добавляем задержку между запросами
 		if cc.requestInterval > 0 {
 			time.Sleep(cc.requestInterval)
 		}
@@ -199,8 +183,6 @@ func (cc *CryptoClient) RunInteractiveMode(ctx context.Context) error {
 
 	return nil
 }
-
-// Вспомогательные функции
 
 func parsePriceMessage(msg string) (Crypto, error) {
 	re := regexp.MustCompile(`Цена (.+): \$(.+)`)
@@ -217,13 +199,11 @@ func parsePriceMessage(msg string) (Crypto, error) {
 }
 
 func parseRatioMessage(msg string) (CryptoRatio, error) {
-	// Формат: Long/Short Ratio BTC: Buy=0.6337%, Sell=0.3663%, L/S=
 	re := regexp.MustCompile(`Long/Short Ratio (.+): Buy=(.+)%, Sell=(.+)%, L/S=(.*)`)
 	matches := re.FindStringSubmatch(msg)
 	if len(matches) >= 5 {
 		longShortRatio := strings.TrimSpace(matches[4])
 		if longShortRatio == "" {
-			// Если L/S пустое, вычисляем его из Buy/Sell
 			buyRatio := parseFloatSafe(matches[2])
 			sellRatio := parseFloatSafe(matches[3])
 			if sellRatio > 0 {
@@ -245,7 +225,6 @@ func parseRatioMessage(msg string) (CryptoRatio, error) {
 	return CryptoRatio{}, fmt.Errorf("invalid ratio message format: %s", msg)
 }
 
-// Вспомогательная функция для безопасного парсинга чисел
 func parseFloatSafe(s string) float64 {
 	var f float64
 	fmt.Sscanf(s, "%f", &f)
@@ -259,13 +238,11 @@ func initializeCSVFile(filename string, headers []string) error {
 	}
 	defer file.Close()
 
-	// Проверяем, пуст ли файл
 	info, err := file.Stat()
 	if err != nil {
 		return err
 	}
 
-	// Если файл пустой, добавляем заголовки
 	if info.Size() == 0 {
 		writer := csv.NewWriter(file)
 		defer writer.Flush()
@@ -305,7 +282,6 @@ func appendRatioToCSVFile(ratio CryptoRatio, filename string) error {
 	return writer.Write(record)
 }
 
-// Методы для RequestCounterStatsHandler
 func (h *RequestCounterStatsHandler) TagRPC(ctx context.Context, info *stats.RPCTagInfo) context.Context {
 	return ctx
 }
@@ -322,9 +298,8 @@ func (h *RequestCounterStatsHandler) TagConn(ctx context.Context, info *stats.Co
 
 func (h *RequestCounterStatsHandler) HandleConn(ctx context.Context, s stats.ConnStats) {}
 
-// Main функция клиента
 func main() {
-	// Создаем клиент
+
 	cryptoClient, err := NewCryptoClient(
 		"localhost:50052",
 		"crypto_data.csv",
@@ -335,16 +310,13 @@ func main() {
 	}
 	defer cryptoClient.Close()
 
-	// Настраиваем контекст с таймаутом
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
-	// Запускаем интерактивный режим
 	if err := cryptoClient.RunInteractiveMode(ctx); err != nil {
 		log.Fatalf("Interactive mode failed: %v", err)
 	}
 
-	// Выводим статистику
 	fmt.Printf("\nTotal gRPC requests made: %d\n", cryptoClient.GetRequestCount())
 	fmt.Println("Данные о ценах сохранены в crypto_data.csv")
 	fmt.Println("Данные о ratio сохранены в crypto_ratio.csv")

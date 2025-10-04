@@ -95,9 +95,6 @@ func (cc *CryptoClient) GetCryptoRatio(ctx context.Context, ticker string) (Cryp
 		return CryptoRatio{}, fmt.Errorf("could not get ratio for %s: %v", ticker, err)
 	}
 
-	// Добавьте для отладки:
-	fmt.Printf("DEBUG: Raw ratio message: %s\n", response.Message)
-
 	ratio, err := parseRatioMessage(response.Message)
 	if err != nil {
 		return CryptoRatio{}, fmt.Errorf("failed to parse ratio message for %s: %v", ticker, err)
@@ -146,6 +143,7 @@ func (cc *CryptoClient) RunInteractiveMode(ctx context.Context) error {
 
 		if ticker == "QUIT" || ticker == "EXIT" || ticker == "" {
 			break
+			return nil
 		}
 
 		crypto, err := cc.GetCryptoPrice(ctx, ticker)

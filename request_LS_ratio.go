@@ -45,7 +45,7 @@ func RequestRatio(tickerName string) (string, string, string, error) {
 		return "", "", "", fmt.Errorf("no ratio data found")
 	}
 
-	// buy ratio, sell ratio и long/short ratio
+	// buy ratio, sell ratio and long/short ratio
 	ratioData := result.Result.List[0]
 	return ratioData.BuyRatio, ratioData.SellRatio, ratioData.LongShortRatio, nil
 }

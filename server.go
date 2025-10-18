@@ -17,7 +17,7 @@ type server struct {
 }
 
 func (s *server) CryptoPrice(ctx context.Context, req *pb.PriceRequest) (*pb.PriceResponse, error) {
-	price, err := RequestTicker(req.Name)
+	price, err := RequestTicker(req.Name) //added date
 	if err != nil {
 		return nil, fmt.Errorf("Не удалось получить цену для %s", req.Name)
 	}

@@ -132,9 +132,6 @@ func KlineRequestTicker(tickerName string, date string) (string, error) {
 func getMothPrices(tickerName string, dates []string) (prices []string, err error) {
 	pricesArray := make([]string, 0)
 
-	currentPrice, _ := MarketRequestTicker(tickerName)
-	pricesArray = append(pricesArray, currentPrice)
-
 	for _, date := range dates {
 		price, _ := KlineRequestTicker(tickerName, date)
 		pricesArray = append(pricesArray, price)
@@ -146,7 +143,7 @@ func getMothPrices(tickerName string, dates []string) (prices []string, err erro
 func addMothPrices(tickerName string) {
 	startDate := yesterdayDate()
 
-	previousDates := generateDateSequence(startDate) // array w 30 days
+	previousDates := generateDateSequence(startDate) // array w 30 days  today -- (today-30)
 
 	filename := fmt.Sprintf("prices%s.csv", tickerName)
 
@@ -155,9 +152,14 @@ func addMothPrices(tickerName string) {
 	}
 	CreateCSV(tickerName)
 
-	prices, _ := getMothPrices("BTC", previousDates)
+	prices, _ := getMothPrices(tickerName, previousDates)
+	currentPrice, _ := MarketRequestTicker(tickerName)
+	AddDataToCSV(filename, currentDate(), tickerName, currentPrice)
 	for i, price := range prices {
 		AddDataToCSV(filename, previousDates[i], tickerName, price)
 	}
+}
 
+func main() {
+	addMothPrices("BTC")
 }

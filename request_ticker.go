@@ -135,6 +135,7 @@ func getMothPrices(tickerName string, dates []string) (prices []string, err erro
 	for _, date := range dates {
 		price, _ := KlineRequestTicker(tickerName, date)
 		pricesArray = append(pricesArray, price)
+		time.Sleep(1 * time.Second)
 	}
 
 	return pricesArray, nil
@@ -158,8 +159,4 @@ func addMothPrices(tickerName string) {
 	for i, price := range prices {
 		AddDataToCSV(filename, previousDates[i], tickerName, price)
 	}
-}
-
-func main() {
-	addMothPrices("BTC")
 }

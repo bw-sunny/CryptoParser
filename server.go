@@ -17,12 +17,27 @@ type server struct {
 }
 
 func (s *server) CryptoPrice(ctx context.Context, req *pb.PriceRequest) (*pb.PriceResponse, error) {
-	price, err := RequestTicker(req.Name)
+	price, err := RequestTicker(req.Name) //added date
 	if err != nil {
 		return nil, fmt.Errorf("Не удалось получить цену для %s", req.Name)
 	}
 	return &pb.PriceResponse{
 		Message: fmt.Sprintf("Цена %s: $%s", req.Name, price),
+	}, nil
+}
+
+func (s *server) CryptoRatio(ctx context.Context, req *pb.RatioRequest) (*pb.RatioResponse, error) {
+	buyRatio, sellRatio, longShortRatio, err := RequestRatio(req.Name)
+	if err != nil {
+		return nil, fmt.Errorf("Не удалось получить данные long/short ratio для %s", req.Name)
+	}
+
+	return &pb.RatioResponse{
+		Message: fmt.Sprintf("Long/Short Ratio %s: Buy=%s%%, Sell=%s%%, L/S=%s",
+			req.Name, buyRatio, sellRatio, longShortRatio),
+		BuyRatio:       buyRatio,
+		SellRatio:      sellRatio,
+		LongShortRatio: longShortRatio,
 	}, nil
 }
 

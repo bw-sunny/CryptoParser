@@ -4,6 +4,7 @@ option go_package = "/Users/bezenov_v/Desktop/CryptoParser/proto";
 
 service Crypto {
   rpc CryptoPrice (PriceRequest) returns (PriceResponse) {}
+  rpc CryptoRatio (RatioRequest) returns (RatioResponse) {}
 }
 
 message PriceRequest {
@@ -12,4 +13,15 @@ message PriceRequest {
 
 message PriceResponse {
   string message = 1;
+}
+
+message RatioRequest {
+  string name = 1;
+}
+
+message RatioResponse {
+  string message = 1;
+  string buy_ratio = 2;
+  string sell_ratio = 3;
+  string long_short_ratio = 4;
 }

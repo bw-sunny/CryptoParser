@@ -26,6 +26,21 @@ func (s *server) CryptoPrice(ctx context.Context, req *pb.PriceRequest) (*pb.Pri
 	}, nil
 }
 
+func (s *server) CryptoRatio(ctx context.Context, req *pb.RatioRequest) (*pb.RatioResponse, error) {
+	buyRatio, sellRatio, longShortRatio, err := RequestRatio(req.Name)
+	if err != nil {
+		return nil, fmt.Errorf("Не удалось получить данные long/short ratio для %s", req.Name)
+	}
+
+	return &pb.RatioResponse{
+		Message: fmt.Sprintf("Long/Short Ratio %s: Buy=%s%%, Sell=%s%%, L/S=%s",
+			req.Name, buyRatio, sellRatio, longShortRatio),
+		BuyRatio:       buyRatio,
+		SellRatio:      sellRatio,
+		LongShortRatio: longShortRatio,
+	}, nil
+}
+
 func main() {
 	lis, err := net.Listen("tcp", ":50052")
 	if err != nil {

@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	Crypto_CryptoPrice_FullMethodName = "/Crypto/CryptoPrice"
+	Crypto_CryptoRatio_FullMethodName = "/Crypto/CryptoRatio"
 )
 
 // CryptoClient is the client API for Crypto service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CryptoClient interface {
 	CryptoPrice(ctx context.Context, in *PriceRequest, opts ...grpc.CallOption) (*PriceResponse, error)
+	CryptoRatio(ctx context.Context, in *RatioRequest, opts ...grpc.CallOption) (*RatioResponse, error)
 }
 
 type cryptoClient struct {
@@ -47,11 +49,22 @@ func (c *cryptoClient) CryptoPrice(ctx context.Context, in *PriceRequest, opts .
 	return out, nil
 }
 
+func (c *cryptoClient) CryptoRatio(ctx context.Context, in *RatioRequest, opts ...grpc.CallOption) (*RatioResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RatioResponse)
+	err := c.cc.Invoke(ctx, Crypto_CryptoRatio_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CryptoServer is the server API for Crypto service.
 // All implementations must embed UnimplementedCryptoServer
 // for forward compatibility.
 type CryptoServer interface {
 	CryptoPrice(context.Context, *PriceRequest) (*PriceResponse, error)
+	CryptoRatio(context.Context, *RatioRequest) (*RatioResponse, error)
 	mustEmbedUnimplementedCryptoServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedCryptoServer struct{}
 
 func (UnimplementedCryptoServer) CryptoPrice(context.Context, *PriceRequest) (*PriceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CryptoPrice not implemented")
+}
+func (UnimplementedCryptoServer) CryptoRatio(context.Context, *RatioRequest) (*RatioResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CryptoRatio not implemented")
 }
 func (UnimplementedCryptoServer) mustEmbedUnimplementedCryptoServer() {}
 func (UnimplementedCryptoServer) testEmbeddedByValue()                {}
@@ -104,6 +120,24 @@ func _Crypto_CryptoPrice_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Crypto_CryptoRatio_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RatioRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CryptoServer).CryptoRatio(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Crypto_CryptoRatio_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CryptoServer).CryptoRatio(ctx, req.(*RatioRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Crypto_ServiceDesc is the grpc.ServiceDesc for Crypto service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var Crypto_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CryptoPrice",
 			Handler:    _Crypto_CryptoPrice_Handler,
+		},
+		{
+			MethodName: "CryptoRatio",
+			Handler:    _Crypto_CryptoRatio_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
